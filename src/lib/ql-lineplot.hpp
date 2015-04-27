@@ -9,11 +9,13 @@ class LinePlotItem : public QQuickPaintedItem {
 	Q_OBJECT
 
 	public:
-		LinePlotItem( QQuickItem* parent = 0 );
+        LinePlotItem( bool interactive = false, QQuickItem* parent = 0);
 		virtual ~LinePlotItem();
 
 		// initialize plot with X,Y labels, show/hide legend
 		Q_INVOKABLE void initPlot(const QString &xLabel, const QString &yLabel, bool showLegend, bool date, const QString &dateFormat);
+
+        Q_INVOKABLE void setInteractive(bool interactive);
 
 		// replot
 		Q_INVOKABLE void replot();
@@ -58,6 +60,7 @@ class LinePlotItem : public QQuickPaintedItem {
 
 	private:
 		QCustomPlot* m_CustomPlot;
+        bool m_interactive;
 
 	private slots:
 		void graphClicked( QCPAbstractPlottable* plottable );

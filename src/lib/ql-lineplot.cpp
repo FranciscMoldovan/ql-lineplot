@@ -1,8 +1,9 @@
 #include "ql-lineplot.hpp"
 #include <QDebug>
-#include <math.h>
+#include <cmath>
+#include <limits>
  
-LinePlotItem::LinePlotItem( QQuickItem* parent ) : QQuickPaintedItem( parent ) , m_CustomPlot( nullptr ) {
+LinePlotItem::LinePlotItem(bool interactive, QQuickItem* parent ) : QQuickPaintedItem( parent ) , m_CustomPlot( nullptr ), m_interactive(interactive) {
 	setFlag( QQuickItem::ItemHasContents, true );
 	// setRenderTarget(QQuickPaintedItem::FramebufferObject);
 	// setAcceptHoverEvents(true);
@@ -34,7 +35,12 @@ void LinePlotItem::initPlot(const QString &xLabel, const QString &yLabel, bool s
 	m_CustomPlot->setInteractions( QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables );
 	connect( m_CustomPlot, SIGNAL( plottableClick( QCPAbstractPlottable*, QMouseEvent* ) ), this, SLOT( graphClicked( QCPAbstractPlottable* ) ) );
 
-	replot();
+    replot();
+}
+
+void LinePlotItem::setInteractive(bool interactive)
+{
+    m_interactive = interactive;
 }
 
 void LinePlotItem::replot(){ m_CustomPlot->replot(); }
@@ -75,7 +81,7 @@ void LinePlotItem::addPoint(const int g, const double x, const double y){
 void LinePlotItem::addPoints(const qreal x, const QList<qreal> &y){
 	if ((m_CustomPlot->graphCount() > 0) && (y.length() > 0))
 		for (int i=0; i<m_CustomPlot->graphCount(); i++)
-			addPoint( i, x, (i < y.length()) ? y[i] : std::nan("") );
+            addPoint( i, x, (i < y.length()) ? y[i] : std::numeric_limits<qreal>::quiet_NaN() );
 }
 void LinePlotItem::removePoint(const int g){
 	if (g < m_CustomPlot->graphCount())
@@ -103,24 +109,29 @@ void LinePlotItem::paint( QPainter* painter ){
 
 void LinePlotItem::mousePressEvent( QMouseEvent* event ){
 //	qDebug() << Q_FUNC_INFO;
-	routeMouseEvents( event );
+    if(m_interactive)
+        routeMouseEvents( event );
 }
 
 void LinePlotItem::mouseReleaseEvent( QMouseEvent* event ){
 //	qDebug() << Q_FUNC_INFO;
-	routeMouseEvents( event );
+    if(m_interactive)
+        routeMouseEvents( event );
 }
 
 void LinePlotItem::mouseMoveEvent( QMouseEvent* event ){
-	routeMouseEvents( event );
+    if(m_interactive)
+        routeMouseEvents( event );
 }
 
 void LinePlotItem::mouseDoubleClickEvent( QMouseEvent* event ){
 //	qDebug() << Q_FUNC_INFO;
-	routeMouseEvents( event );   
+    if(m_interactive)
+        routeMouseEvents( event );
 }
 
 void LinePlotItem::graphClicked( QCPAbstractPlottable* plottable ){
+    Q_UNUSED(plottable)
 //	qDebug() << Q_FUNC_INFO << QString( "Clicked on graph '%1 " ).arg( plottable->name() );
 }
 
